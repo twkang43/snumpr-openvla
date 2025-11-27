@@ -670,4 +670,12 @@ OXE_DATASET_CONFIGS = {
         "state_encoding": StateEncoding.POS_EULER,
         "action_encoding": ActionEncoding.EEF_POS,
     },
+    ### SNUMPR real-world dataset
+    "ur_teleop_dataset": {
+        "image_obs_keys": {"primary": "image", "secondary": None, "wrist": None},
+        "depth_obs_keys": {"primary": None, "secondary": None, "wrist": None},
+        "state_obs_keys": ["proprio"],
+        "state_encoding": StateEncoding.JOINT,
+        "action_encoding": ActionEncoding.EEF_POS,
+    }
 }

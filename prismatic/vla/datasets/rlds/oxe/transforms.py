@@ -841,6 +841,11 @@ def libero_dataset_transform(trajectory: Dict[str, Any]) -> Dict[str, Any]:
     return trajectory
 
 
+def snumpr_dataset_transform(trajectory: Dict[str, Any]) -> Dict[str, Any]:
+    trajectory["observation"]["proprio"] = trajectory["observation"]["state"]
+    return trajectory
+
+
 # === Registry ===
 OXE_STANDARDIZATION_TRANSFORMS = {
     "bridge_oxe": bridge_oxe_dataset_transform,
@@ -919,4 +924,6 @@ OXE_STANDARDIZATION_TRANSFORMS = {
     "libero_object_no_noops": libero_dataset_transform,
     "libero_goal_no_noops": libero_dataset_transform,
     "libero_10_no_noops": libero_dataset_transform,
+    ### SNUMPR real-world dataset
+    "ur_teleop_dataset": snumpr_dataset_transform,
 }
