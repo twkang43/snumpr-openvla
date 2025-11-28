@@ -68,7 +68,7 @@ class GenerateConfig:
 
     blocking: bool = False                                      # Whether to use blocking control
     max_episodes: int = 50                                      # Max number of episodes to run
-    max_steps: int = 200                                        # Max number of timesteps per episode
+    max_steps: int = 300                                        # Max number of timesteps per episode
     control_frequency: float = 5                                # UR control frequency
 
     #################################################################################################################

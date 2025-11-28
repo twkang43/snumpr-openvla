@@ -126,8 +126,12 @@ class URClient:
         new_pose[0:3] += delta_xyz
         new_pose[3:6] += delta_rotvec
         
-        self.rtde_c.moveL(
-            new_pose.tolist(), spped, acceleration, asynchronous=(not blocking)
+        # self.rtde_c.moveL(
+        #     new_pose.tolist(), spped, acceleration, asynchronous=(not blocking)
+        # )
+        
+        self.rtde_c.servoL(
+            new_pose.tolist(), spped, acceleration, 0.2, 0.2, 100
         )
         
         gripper_command = self.gripper.get_open_position() if (0 < action[-1]) else self.gripper.get_closed_position()
