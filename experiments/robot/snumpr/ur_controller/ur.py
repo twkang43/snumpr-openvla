@@ -76,8 +76,6 @@ class URClient:
         self.gripper.connect(ur_ip, 63352)
         self.gripper.activate()
 
-        time.sleep(0.1)
-
         self._pose_lock = threading.Lock()
         self.target_pose = None
         self._control_running = True
@@ -105,11 +103,21 @@ class URClient:
 
         print(f"URClient connected to {host}:{port}")
 
-    def _sync_target_to_actual(self):
+    def _flush_receive_buffer(self):
+        print("Flushing receive buffer...")
+        for _ in range(100):
+            self.rtde_r.getActualTCPPose()
+        print("Receive buffer flushed.")
+
+    def _sync_target_to_actual(self, flush=True):
         """Read current TCP pose and set it as the servo target."""
+        if flush:
+            self._flush_receive_buffer()
+            
         actual_pose = self.rtde_r.getActualTCPPose()
         with self._pose_lock:
             self.target_pose = list(actual_pose)
+            
         return actual_pose
 
     def _control_loop(self, frequency=100.0):
@@ -143,7 +151,7 @@ class URClient:
             # Safety: if target drifts too far from actual, resync to actual pose
             if (0.15 < diff):
                 print(f"[SafeGuard] Drift detected ({diff:.3f}m). Re-syncing.")
-                current_pose = self._sync_target_to_actual()
+                current_pose = self._sync_target_to_actual(flush=False)
                 cmd_pose = list(current_pose)
 
             try:
@@ -183,18 +191,24 @@ class URClient:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         return {"image": image, "full_image": image}
+    
+    def stop(self):
+        print("Stopping URClient...")
+        self._control_active = False
+        self.rtde_c.servoStop()
+        
+        with self._pose_lock:
+            self.target_pose = None
+            
+        time.sleep(0.5)
+            
+        print("URClient stopped.")
 
     def reset(self):
         # Put the control loop into idle state
         self._control_active = False
-        
-        try:
-            self.rtde_c.servoStop()
-        except Exception:
-            pass
-
-        # Resync target to current pose so that the next servo commands start from here
-        self._sync_target_to_actual()
+        with self._pose_lock:
+            self.target_pose = None
 
     def _rotvec2rpy(self, rotvec):
         """Convert rotation vector to roll-pitch-yaw."""
@@ -257,9 +271,6 @@ class URClient:
         except Exception as e:
             print("[move] moveL error:", e)
 
-        # After move, sync target to actual so the servo loop continues smoothly
-        self._sync_target_to_actual()
-
         try:
             self.gripper.move_and_wait_for_pos(
                 position=self.gripper.get_open_position(),
@@ -268,3 +279,7 @@ class URClient:
             )
         except Exception as e:
             print("[move] gripper error:", e)
+            
+        # After move, sync target to actual so the servo loop continues smoothly
+        self._sync_target_to_actual()
+        print(f"Target pose: {self.target_pose}")

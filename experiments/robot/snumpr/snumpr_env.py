@@ -89,6 +89,9 @@ class URGym(gym.Env):
             obs = convert_obs(raw_obs, self.im_size)
 
         return obs, 0, False, truncated, {}
+    
+    def stop(self):
+        self.ur_client.stop()
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
