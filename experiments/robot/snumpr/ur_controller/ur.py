@@ -105,6 +105,10 @@ class URClient:
     def reset(self):
         pass
     
+    def _rotvec2rpy(self, rotvec):
+        """Convert rotation vector to roll-pitch-yaw."""
+        return R.from_rotvec(rotvec).as_euler('xyz')
+    
     def _rpy2rotvec(self, rpy):
         """Convert roll-pitch-yaw to rotation vector."""
         return R.from_euler('xyz', rpy).as_rotvec()
@@ -112,26 +116,25 @@ class URClient:
     def step_action(
         self, 
         action, 
-        spped = 0.5, # m/s
+        speed = 0.5, # m/s
         acceleration = 0.5, # m/s^2
         blocking=True
     ):
         action = np.asarray(action, dtype=np.float32)
         current_pose = np.array(self.rtde_r.getActualTCPPose()) # [x,y,z,rx,ry,rz]
+        current_rpy = self._rotvec2rpy(current_pose[3:6])
         
         delta_xyz = action[0:3]
-        delta_rotvec = self._rpy2rotvec(action[3:6])
+        delta_rpy = action[3:6]
+        
+        new_rotvec = self._rpy2rotvec(current_rpy + delta_rpy)
         
         new_pose = current_pose.copy()
         new_pose[0:3] += delta_xyz
-        new_pose[3:6] += delta_rotvec
-        
-        # self.rtde_c.moveL(
-        #     new_pose.tolist(), spped, acceleration, asynchronous=(not blocking)
-        # )
+        new_pose[3:6] = new_rotvec
         
         self.rtde_c.servoL(
-            new_pose.tolist(), spped, acceleration, 0.2, 0.2, 100
+            new_pose.tolist(), speed, acceleration, 0.2, 0.2, 100
         )
         
         gripper_command = self.gripper.get_open_position() if (0 < action[-1]) else self.gripper.get_closed_position()
