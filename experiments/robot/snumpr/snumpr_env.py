@@ -7,22 +7,7 @@ from typing import Dict
 
 import gym
 import numpy as np
-# from pyquaternion import Quaternion
 from experiments.robot.snumpr.ur_controller.ur import URClient
-
-
-# def state_to_eep(xyz_coor, zangle: float):
-#     """
-#     Implements the state to end-effector pose function, returning a 4x4 matrix.
-#     Refer to `ur_controller/ur_controller.py` in the `bridge_data_robot` codebase.
-#     """
-#     assert len(xyz_coor) == 3
-#     DEFAULT_ROTATION = np.array([[0, 0, 1.0], [0, 1.0, 0], [-1.0, 0, 0]])
-#     new_pose = np.eye(4)
-#     new_pose[:3, -1] = xyz_coor
-#     new_quat = Quaternion(axis=np.array([0.0, 0.0, 1.0]), angle=zangle) * Quaternion(matrix=DEFAULT_ROTATION)
-#     new_pose[:3, :3] = new_quat.rotation_matrix
-#     return new_pose
 
 
 def wait_for_obs(ur_client):
@@ -125,31 +110,6 @@ class URGym(gym.Env):
         successful = False
         while not successful:
             try:
-                # Get XYZ position from user.
-                # init_x, init_y, init_z = self.cfg.init_ee_pos
-                # x_val = input(f"Enter x value of gripper starting position (leave empty for default == {init_x}): ")
-                # if x_val == "":
-                #     x_val = init_x
-                # y_val = input(f"Enter y value of gripper starting position (leave empty for default == {init_y}): ")
-                # if y_val == "":
-                #     y_val = init_y
-                # z_val = input(f"Enter z value of gripper starting position (leave empty for default == {init_z}): ")
-                # if z_val == "":
-                #     z_val = init_z
-                # Fix initial orientation and add user's commanded XYZ into start transform.
-                # Initial orientation: gripper points ~15 degrees away from the standard orientation (quat=[0, 0, 0, 1]).
-                # transform = np.array(
-                #     [
-                #         [0.267, 0.000, 0.963, float(init_x)],
-                #         [0.000, 1.000, 0.000, float(init_y)],
-                #         [-0.963, 0.000, 0.267, float(init_z)],
-                #         [0.00, 0.00, 0.00, 1.00],
-                #     ]
-                # )
-                # IMPORTANT: It is very important to move to reset position with blocking==True.
-                #            Otherwise, the controller's `_reset_previous_qpos()` call will be called immediately after
-                #            the move command is given -- and before the move is complete -- and the initial state will
-                #            be totally incorrect.
                 self.ur_client.move(np.concatenate([self.cfg.init_ee_pos, self.cfg.init_ee_rotvec]), blocking=True)
                 successful = True
             except Exception as e:
