@@ -3,7 +3,7 @@
 import os
 import sys
 import time
-
+import atexit
 import imageio
 import numpy as np
 import tensorflow as tf
@@ -51,8 +51,12 @@ def get_ur_env(cfg, model=None):
     env_params = get_ur_env_params(cfg)
     start_state = np.concatenate([cfg.init_ee_pos, cfg.init_ee_rotvec])
     env_params["start_state"] = list(start_state)
+    
     # Set up the UR client
     ur_client = URClient(host=cfg.host_ip, ur_ip=cfg.ur_ip, port=cfg.port)
+    print(f"[System] Registering safe exit for URClient connected to {cfg.ur_ip}")
+    atexit.register(ur_client.stop)
+    
     ur_client.init(env_params)
     env = URGym(
         ur_client,

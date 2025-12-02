@@ -85,7 +85,7 @@ def eval_model_in_snumpr_env(cfg: GenerateConfig) -> None:
     assert cfg.center_crop, "`center_crop` should be enabled for SNUMPR evaluations!"
 
     # [OpenVLA] Set action un-normalization key
-    cfg.unnorm_key = "pnp_simple_dataset"
+    cfg.unnorm_key = "pnp_full_dataset"
 
     # Load model
     model = get_model(cfg)
@@ -164,7 +164,6 @@ def eval_model_in_snumpr_env(cfg: GenerateConfig) -> None:
             except (KeyboardInterrupt, Exception) as e:
                 if isinstance(e, KeyboardInterrupt):
                     print("\nCaught KeyboardInterrupt: Terminating episode early.")
-                    env.stop()
                 else:
                     print(f"\nCaught exception: {e}")
                 break

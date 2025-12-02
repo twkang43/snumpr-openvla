@@ -69,8 +69,8 @@ class URClient:
             ur_ip: UR controller ip
             port: (kept for interface compatibility, not used directly)
         """
-        self.rtde_c = rtde_control.RTDEControlInterface(ur_ip)
-        self.rtde_r = rtde_receive.RTDEReceiveInterface(ur_ip)
+        self.rtde_c = rtde_control.RTDEControlInterface(ur_ip, 100)
+        self.rtde_r = rtde_receive.RTDEReceiveInterface(ur_ip, 100)
 
         self.gripper = robotiq.RobotiqGripper()
         self.gripper.connect(ur_ip, 63352)
@@ -102,10 +102,10 @@ class URClient:
         )
 
         print(f"URClient connected to {host}:{port}")
-
+        
     def _flush_receive_buffer(self):
         print("Flushing receive buffer...")
-        for _ in range(100):
+        for _ in range(1000):
             self.rtde_r.getActualTCPPose()
         print("Receive buffer flushed.")
 
@@ -193,16 +193,16 @@ class URClient:
         return {"image": image, "full_image": image}
     
     def stop(self):
-        print("Stopping URClient...")
-        self._control_active = False
-        self.rtde_c.servoStop()
-        
-        with self._pose_lock:
-            self.target_pose = None
-            
-        time.sleep(0.5)
-            
-        print("URClient stopped.")
+        print("[URClient] Stopping ...")
+        self._control_running = False
+        try:
+            self.rtde_c.servoStop()
+            self.rtde_c.stopScript()
+            self.rtde_c.disconnect()
+            self.rtde_r.disconnect()
+        except Exception as e:
+            print(f"[URClient] Cleanup error: {e}")
+        print("[URClient] Disconnected.")
 
     def reset(self):
         # Put the control loop into idle state
@@ -255,7 +255,6 @@ class URClient:
         self.gripper.move(position=gripper_command, speed=64, force=1)
 
     def move(self, pose, speed=0.1, acceleration=0.1, blocking=True):
-        print("[URClient] move command received.")
         pose = np.asarray(pose, dtype=np.float32)
 
         # Pause the control loop while doing a blocking moveL
@@ -282,4 +281,9 @@ class URClient:
             
         # After move, sync target to actual so the servo loop continues smoothly
         self._sync_target_to_actual()
-        print(f"Target pose: {self.target_pose}")
+        print("Target pose: " + ", ".join(f"{v:.4f}" for v in self.target_pose))
+        
+        if (1e-2 < np.linalg.norm(np.array(self.rtde_r.getActualTCPPose()) - pose)):
+            print("[URClient] Warning: move command did not reach target pose accurately.")
+            input("PRESS ENTER TO CONTINUE...")
+            input("DO NOT FORGET TO CHECK THE ROBOT SAFETY!")
