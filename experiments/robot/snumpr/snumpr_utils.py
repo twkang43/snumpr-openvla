@@ -34,7 +34,7 @@ def get_ur_env_params(cfg):
         ],
         "action_clipping": "xyz",
         "catch_environment_except": False,
-        "start_state": [0.6918, -0.1736, 0.6794, 2.214, 2.221, -0.002], # pose when reset is called
+        "start_state": [0.6918, -0.1736, 0.6794, 2.214, 2.221, 0.003], # pose when reset is called
         "skip_move_to_neutral": False,
         "return_full_image": False,
         "camera_topics": [{"name": "/blue/image_raw"}],

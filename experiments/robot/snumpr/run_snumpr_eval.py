@@ -57,7 +57,7 @@ class GenerateConfig:
 
     # Note: Setting initial orientation with a 30 degree offset, which makes the robot appear more natural
     init_ee_pos: List[float] = field(default_factory=lambda: [0.6918, -0.1736, 0.6794])
-    init_ee_rotvec: List[float] = field(default_factory=lambda: [2.214, 2.221, -0.002])
+    init_ee_rotvec: List[float] = field(default_factory=lambda: [2.214, 2.221, 0.003])
     bounds: List[List[float]] = field(default_factory=lambda: [
             [0.1, -0.20, -0.01, -1.57, 0],
             [0.45, 0.25, 0.30, 1.57, 0],
