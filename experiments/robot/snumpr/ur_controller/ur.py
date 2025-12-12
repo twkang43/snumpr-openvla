@@ -86,7 +86,7 @@ class URClient:
         # Servo parameters
         self.servo_accel = 0.0
         self.servo_speed = 0.0
-        self.servo_lookahead = 0.1
+        self.servo_lookahead = 0.18
         self.servo_gain = 100
 
         # Initialize target to actual pose once before starting control loop
